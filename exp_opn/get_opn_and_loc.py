@@ -10,9 +10,29 @@ class Get_Opn_and_Loc:
         self.ds = Dep_Syn()
         self.model = fasttext.load_model(sentiment_model)
 
+    def del_url(self, x):
+        pattern = '|'.join(['http\S+', '\@\w+', 'www\.\S+','\w+\.com', '\w+\.cn', '\w+\.org'])
+        url = re.findall(pattern, x)
+        for i in url:
+            x = x.replace(i, ' ')
+        return x
+
+    def del_mail(self, x):
+        pattern = '([A-Za-z0-9]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+)'
+        mail = re.findall(pattern, x)
+        for i in mail:
+            x = x.replace(i[0], ' ')
+        return x
+
     def split_sentence(self, text: str):
+        text = self.del_url(text)
+        text = self.del_mail(text)
         text_list = [i for i in re.split(r'[.:?!\n\t]', text) if i.strip() != '' and len(i.strip().split()) >= 2]
-        return text_list
+        not_repeat_list = []
+        for t in text_list:
+            if t not in not_repeat_list:
+                not_repeat_list.append(t)
+        return not_repeat_list
 
     def get_sentiment(self, text):
         text = text.lower()
